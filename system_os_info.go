@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"time"
 
-	"package_exporter/metrics"
+	"system_os_info/metrics"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -20,7 +20,20 @@ func main() {
 	interval := flag.Int("interval", 30, "Interval (in minutes) to collect metrics")
 	cpuMillicores := flag.Int("resource.cpu", 0, "Maximum CPU usage in millicores (0 for no limit)")
 	memoryLimit := flag.Int64("resource.memory", 0, "Maximum memory usage in MB (0 for no limit)")
+
+	// Add flags for enabling filesystem and process metrics
+	enableFilesystem := flag.Bool("filesystem", false, "Enable collection of filesystem metrics")
+	enableProcess := flag.Bool("process", false, "Enable collection of process metrics")
+
+	// Add a flag for enabling debug mode
+	debugMode := flag.Bool("debug", false, "Enable debug mode with detailed logs")
 	flag.Parse()
+
+	// Set log level based on debug mode
+	if *debugMode {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+		log.Println("Debug mode enabled")
+	}
 
 	// Set CPU limit based on millicores
 	if *cpuMillicores > 0 {
@@ -44,19 +57,60 @@ func main() {
 		}()
 	}
 
+	// Example debug log
+	if *debugMode {
+		log.Println("Debug: Starting metric collection loop")
+	}
+
+	// Conditionally register metrics based on flags
+	if *enableFilesystem {
+		log.Println("Registering filesystem metrics...")
+		metrics.RegisterFilesystemMetrics()
+	}
+
+	if *enableProcess {
+		log.Println("Registering process metrics...")
+		metrics.RegisterProcessMetrics()
+	}
+
 	// Start a goroutine to periodically collect metrics based on the interval
 	go func() {
 		ticker := time.NewTicker(time.Duration(*interval) * time.Minute)
 		defer ticker.Stop()
 
 		for {
-			log.Println("Collecting metrics...")
+			if *debugMode {
+				log.Println("Debug: Collecting metrics...")
+			}
 			metrics.CollectPackageVersions()
 			metrics.CollectOSInfo()
 			metrics.CollectPackageUpdateAvailability()
+
+			// Collect filesystem metrics if enabled
+			if *enableFilesystem {
+				if *debugMode {
+					log.Println("Debug: Collecting filesystem metrics...")
+				}
+				metrics.CollectFilesystemMetrics()
+			}
+
+			// Collect process metrics if enabled
+			if *enableProcess {
+				if *debugMode {
+					log.Println("Debug: Collecting process metrics...")
+				}
+				metrics.CollectProcessMetrics()
+			}
+
 			<-ticker.C
 		}
 	}()
+
+	// Start a goroutine to collect system metrics
+	go metrics.CollectSystemMetrics()
+
+	// Call any initialization logic from other files
+	// metrics.InitializeSystemMetrics()
 
 	// Expose metrics
 	http.Handle("/metrics", promhttp.Handler())
@@ -85,4 +139,6 @@ func main() {
 	if err := http.ListenAndServe(serverAddress, nil); err != nil {
 		log.Fatalf("Error starting HTTP server: %v", err)
 	}
+
+	log.Println("Application started")
 }
