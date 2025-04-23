@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"log"
+	"math"
 	"net/http"
+	"runtime"
 	"time"
 
 	"package_exporter/metrics"
@@ -12,11 +14,35 @@ import (
 )
 
 func main() {
-	// Define command-line flags for address, port, and interval
+	// Define command-line flags for address, port, interval, CPU (millicores), and memory limits
 	address := flag.String("address", "0.0.0.0", "Address to bind the HTTP server")
 	port := flag.String("port", "9101", "Port to bind the HTTP server")
 	interval := flag.Int("interval", 30, "Interval (in minutes) to collect metrics")
+	cpuMillicores := flag.Int("resource.cpu", 0, "Maximum CPU usage in millicores (0 for no limit)")
+	memoryLimit := flag.Int64("resource.memory", 0, "Maximum memory usage in MB (0 for no limit)")
 	flag.Parse()
+
+	// Set CPU limit based on millicores
+	if *cpuMillicores > 0 {
+		numCores := int(math.Ceil(float64(*cpuMillicores) / 1000.0))
+		runtime.GOMAXPROCS(numCores)
+		log.Printf("CPU usage limited to %d millicores (~%d cores)", *cpuMillicores, numCores)
+	}
+
+	// Start a goroutine to monitor memory usage if a limit is set
+	if *memoryLimit > 0 {
+		go func() {
+			memoryLimitBytes := *memoryLimit * 1024 * 1024
+			for {
+				var memStats runtime.MemStats
+				runtime.ReadMemStats(&memStats)
+				if memStats.Alloc > uint64(memoryLimitBytes) {
+					log.Fatalf("Memory usage exceeded the limit of %d MB", *memoryLimit)
+				}
+				time.Sleep(1 * time.Second)
+			}
+		}()
+	}
 
 	// Start a goroutine to periodically collect metrics based on the interval
 	go func() {
