@@ -27,6 +27,10 @@ func main() {
 
 	// Add a flag for enabling debug mode
 	debugMode := flag.Bool("debug", false, "Enable debug mode with detailed logs")
+
+	// Add flags for enabling auditing files and scheduled jobs metrics
+	enableAuditing := flag.Bool("auditing", false, "Enable collection of auditing files metrics")
+	enableScheduledJobs := flag.Bool("scheduled-jobs", false, "Enable collection of scheduled jobs metrics")
 	flag.Parse()
 
 	// Set log level based on debug mode
@@ -73,6 +77,16 @@ func main() {
 		metrics.RegisterProcessMetrics()
 	}
 
+	if *enableAuditing {
+		log.Println("Registering auditing files metrics...")
+		metrics.RegisterAuditingMetrics()
+	}
+
+	if *enableScheduledJobs {
+		log.Println("Registering scheduled jobs metrics...")
+		metrics.RegisterScheduledJobsMetrics()
+	}
+
 	// Start a goroutine to periodically collect metrics based on the interval
 	go func() {
 		ticker := time.NewTicker(time.Duration(*interval) * time.Minute)
@@ -100,6 +114,20 @@ func main() {
 					log.Println("Debug: Collecting process metrics...")
 				}
 				metrics.CollectProcessMetrics()
+			}
+
+			if *enableAuditing {
+				if *debugMode {
+					log.Println("Debug: Collecting auditing files metrics...")
+				}
+				metrics.CollectAuditingMetrics()
+			}
+
+			if *enableScheduledJobs {
+				if *debugMode {
+					log.Println("Debug: Collecting scheduled jobs metrics...")
+				}
+				metrics.CollectScheduledJobsMetrics()
 			}
 
 			<-ticker.C

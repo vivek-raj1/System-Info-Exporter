@@ -37,16 +37,16 @@ func CollectFilesystemMetrics() {
 			continue
 		}
 
-		totalSpace := stat.Blocks * uint64(stat.Bsize)
-		freeSpace := stat.Bfree * uint64(stat.Bsize)
+		totalSpace := int64(stat.Blocks * uint64(stat.Bsize))
+		freeSpace := int64(stat.Bfree * uint64(stat.Bsize))
 		usedSpace := totalSpace - freeSpace
 		filesystemType := getFilesystemType(stat.Type)
 
 		filesystemMetrics.WithLabelValues(
 			mountPoint,
 			filesystemType,
-			formatBytes(totalSpace),
-			formatBytes(usedSpace),
+			formatBytesFilesystem(totalSpace),
+			formatBytesFilesystem(usedSpace),
 		).Set(1)
 	}
 }
@@ -63,12 +63,12 @@ func getFilesystemType(fsType uint32) string {
 	}
 }
 
-func formatBytes(bytes uint64) string {
+func formatBytesFilesystem(bytes int64) string {
 	const unit = 1024
 	if bytes < unit {
 		return fmt.Sprintf("%d B", bytes)
 	}
-	div, exp := uint64(unit), 0
+	div, exp := int64(unit), 0
 	for n := bytes / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++
