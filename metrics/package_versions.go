@@ -24,18 +24,32 @@ func init() {
 	prometheus.MustRegister(packageVersions)
 }
 
-func CollectPackageVersions() {
+func CollectPackageVersions(debug bool) {
+	if debug {
+		log.Println("Debug: Starting package version collection")
+	}
+
 	switch runtime.GOOS {
 	case "linux":
-		collectLinuxPackageVersions()
+		if debug {
+			log.Println("Debug: Collecting package versions for Linux")
+		}
+		collectLinuxPackageVersions(debug)
 	case "darwin":
-		collectMacOSPackageVersions()
+		if debug {
+			log.Println("Debug: Collecting package versions for macOS")
+		}
+		collectMacOSPackageVersions(debug)
 	default:
 		log.Println("Unsupported operating system")
 	}
+
+	if debug {
+		log.Println("Debug: Finished package version collection")
+	}
 }
 
-func collectLinuxPackageVersions() {
+func collectLinuxPackageVersions(debug bool) {
 	if _, err := os.Stat("/var/lib/dpkg/status"); err == nil {
 		// Use dpkg for Debian/Ubuntu-based systems
 		parseDpkgStatusFile("/var/lib/dpkg/status")
@@ -138,7 +152,7 @@ func parseDpkgStatusFile(filepath string) {
 	}
 }
 
-func collectMacOSPackageVersions() {
+func collectMacOSPackageVersions(debug bool) {
 	homebrewPaths := []string{"/usr/local/Cellar", "/opt/homebrew/Cellar"}
 
 	var homebrewCellar string

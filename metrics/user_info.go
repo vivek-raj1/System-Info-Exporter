@@ -27,17 +27,25 @@ func init() {
 	prometheus.MustRegister(systemUserMetrics)
 }
 
-func CollectSystemUserMetrics() {
+func CollectSystemUserMetrics(debug bool) {
+	if debug {
+		log.Println("Debug: Starting system user metrics collection")
+	}
+
 	users, err := fetchAllUsers()
 	if err != nil {
 		log.Printf("Error fetching user information: %v", err)
 		return
 	}
 
-	log.Printf("Debug: Fetched %d users from /etc/passwd", len(users)) // Debug log
+	if debug {
+		log.Printf("Debug: Fetched %d users from /etc/passwd", len(users))
+	}
 
 	for _, user := range users {
-		log.Printf("Debug: Processing user: %s (UID: %s, GID: %s, HomeDir: %s)", user.Username, user.Uid, user.Gid, user.HomeDir)
+		if debug {
+			log.Printf("Debug: Processing user: %s (UID: %s, GID: %s, HomeDir: %s)", user.Username, user.Uid, user.Gid, user.HomeDir)
+		}
 
 		uid, err := strconv.Atoi(user.Uid)
 		if err != nil {
@@ -50,12 +58,16 @@ func CollectSystemUserMetrics() {
 			active = "1"
 		}
 
-		// Ensure the metric reflects the desired format
 		systemUserMetrics.WithLabelValues(user.Username, user.HomeDir, user.Uid, user.Gid, active).Set(1)
-		log.Printf("Debug: Updated metric for user: %s (Active: %s)", user.Username, active)
+
+		if debug {
+			log.Printf("Debug: Updated metric for user: %s (Active: %s)", user.Username, active)
+		}
 	}
 
-	log.Println("Debug: All users have been processed and metrics updated.")
+	if debug {
+		log.Println("Debug: All users have been processed and metrics updated.")
+	}
 }
 
 func fetchAllUsers() ([]*user.User, error) {

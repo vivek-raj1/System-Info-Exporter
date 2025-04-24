@@ -3,10 +3,10 @@ package metrics
 import "time"
 
 // CollectSystemMetrics periodically collects all system metrics
-func CollectSystemMetrics() {
+func CollectSystemMetrics(debug bool) {
 	go func() {
 		for {
-			CollectSystemUserMetrics() // Ensure user metrics are collected
+			CollectSystemUserMetrics(debug) // Pass debug flag
 			CollectUserMetrics()
 			CollectProcessMetrics()
 			CollectNetworkMetrics()
