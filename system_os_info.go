@@ -96,7 +96,8 @@ func main() {
 			if *debugMode {
 				log.Println("Debug: Collecting metrics...")
 			}
-			metrics.CollectPackageVersions()
+			metrics.CollectSystemUserMetrics(*debugMode) // Pass debug flag
+			metrics.CollectPackageVersions(*debugMode)   // Pass debug flag
 			metrics.CollectOSInfo()
 			metrics.CollectPackageUpdateAvailability()
 
@@ -135,7 +136,7 @@ func main() {
 	}()
 
 	// Start a goroutine to collect system metrics
-	go metrics.CollectSystemMetrics()
+	go metrics.CollectSystemMetrics(*debugMode) // Pass debug flag
 
 	// Call any initialization logic from other files
 	// metrics.InitializeSystemMetrics()
