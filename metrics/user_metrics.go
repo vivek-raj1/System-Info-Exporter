@@ -6,11 +6,18 @@ import (
 )
 
 func CollectUserMetrics() {
-	users, err := user.Current()
+	currentUser, err := user.Current()
 	if err != nil {
-		log.Printf("Error fetching user info: %v", err)
+		log.Printf("Error fetching current user info: %v", err)
 		return
 	}
-	// Use the metric defined in user_info.go
-	systemUserMetrics.WithLabelValues(users.Username, users.Uid, users.Gid, users.HomeDir).Set(1)
+
+	// Add GID to match the updated metric definition
+	systemUserMetrics.WithLabelValues(
+		currentUser.Username,
+		currentUser.HomeDir,
+		currentUser.Uid,
+		currentUser.Gid,
+		"1", // Assume the current user is always active
+	).Set(1)
 }
