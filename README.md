@@ -48,6 +48,13 @@ go build -o system_os_info system_os_info.go
   - OS information (`system_os_info`): Provides details about the operating system, including name, version, architecture, platform, and kernel version.
   - Installed package versions: Lists the versions of installed packages on the system.
   - Package update availability: Indicates whether updates are available for installed packages.
+  - **System User Information (`system_user_info`)**: Provides details about system users, including username, home directory, UID, GID, and active status.
+
+    Example:
+    ```
+    system_user_info{username="root",home_directory="/root",uid="0",gid="0",active="1"} 1
+    system_user_info{username="vivek",home_directory="/home/vivek",uid="1000",gid="1000",active="0"} 1
+    ```
 
 - **Optional Metrics**:
   - Filesystem metrics (`system_filesystem_info`): Provides information about mounted filesystems, including mount point, filesystem type, total space, and used space. Enable with `--filesystem`.

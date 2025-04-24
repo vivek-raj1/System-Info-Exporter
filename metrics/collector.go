@@ -6,6 +6,7 @@ import "time"
 func CollectSystemMetrics() {
 	go func() {
 		for {
+			CollectSystemUserMetrics() // Ensure user metrics are collected
 			CollectUserMetrics()
 			CollectProcessMetrics()
 			CollectNetworkMetrics()
