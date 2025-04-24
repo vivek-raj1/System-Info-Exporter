@@ -40,7 +40,7 @@ func CollectFilesystemMetrics() {
 		totalSpace := int64(stat.Blocks * uint64(stat.Bsize))
 		freeSpace := int64(stat.Bfree * uint64(stat.Bsize))
 		usedSpace := totalSpace - freeSpace
-		filesystemType := getFilesystemType(stat.Type)
+		filesystemType := getFilesystemType(uint32(stat.Type))
 
 		filesystemMetrics.WithLabelValues(
 			mountPoint,

@@ -60,7 +60,7 @@ func detectLinuxDistroAndCollectUpdates() {
 		switch distro {
 		case "ubuntu", "debian":
 			collectAptUpdates()
-		case "rhel", "centos", "fedora", "amazon":
+		case "rhel", "centos", "fedora", "amazon", "amzn":
 			collectYumOrDnfUpdates()
 		default:
 			log.Printf("Unsupported Linux distribution: %s", distro)
