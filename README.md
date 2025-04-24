@@ -15,9 +15,6 @@ This exporter collects and exposes system information and package details as Pro
 ### Build the Exporter
 
 ```bash
-go mod init system_os_info
-go get github.com/prometheus/client_golang/prometheus
-go get github.com/prometheus/client_golang/prometheus/promhttp
 go build -o system_os_info system_os_info.go
 ```
 

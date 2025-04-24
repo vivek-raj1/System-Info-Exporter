@@ -32,7 +32,7 @@ func CollectSystemUserMetrics(debug bool) {
 		log.Println("Debug: Starting system user metrics collection")
 	}
 
-	users, err := fetchAllUsers()
+	users, err := fetchAllUsers(debug) // Pass debug flag
 	if err != nil {
 		log.Printf("Error fetching user information: %v", err)
 		return
@@ -70,7 +70,7 @@ func CollectSystemUserMetrics(debug bool) {
 	}
 }
 
-func fetchAllUsers() ([]*user.User, error) {
+func fetchAllUsers(debug bool) ([]*user.User, error) {
 	users := []*user.User{}
 
 	// Open /etc/passwd to read all users
@@ -110,7 +110,10 @@ func fetchAllUsers() ([]*user.User, error) {
 				Gid:      fields[3], // Extract GID directly from /etc/passwd
 				HomeDir:  usr.HomeDir,
 			})
-			log.Printf("Fetched user: %s (UID: %s, GID: %s, HomeDir: %s, Shell: %s)", usr.Username, usr.Uid, fields[3], usr.HomeDir, shell) // Debug log
+
+			if debug {
+				log.Printf("Debug: Fetched user: %s (UID: %s, GID: %s, HomeDir: %s, Shell: %s)", usr.Username, usr.Uid, fields[3], usr.HomeDir, shell)
+			}
 		}
 	}
 
